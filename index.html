@@ -19,6 +19,7 @@
   <main class="container">
     <nav class="tabs">
       <button id="tabCalendar" class="tab active">Calendário</button>
+      <button id="tabDashboard" class="tab">Dashboard</button>
       <button id="tabNotes" class="tab">Notes</button>
     </nav>
 
@@ -30,6 +31,11 @@
           <button id="nextMonth" aria-label="Próximo mês">▶</button>
         </div>
         <div id="calendar" class="calendar" role="grid" aria-label="Calendário mensal"></div>
+      </section>
+
+      <section id="dashboardView" class="panel hidden">
+        <h2>Dashboard</h2>
+        <div id="dashboardGrid" class="dashboardGrid"></div>
       </section>
 
       <section id="notesView" class="panel hidden">

@@ -5,8 +5,11 @@ const userSelect = $('#userSelect');
 const newUserBtn = $('#newUserBtn');
 const tabCalendar = $('#tabCalendar');
 const tabNotes = $('#tabNotes');
+const tabDashboard = $('#tabDashboard');
 const calendarView = $('#calendarView');
 const notesView = $('#notesView');
+const dashboardView = $('#dashboardView');
+const dashboardGrid = $('#dashboardGrid');
 const calendarEl = $('#calendar');
 const monthLabel = $('#monthLabel');
 const prevMonthBtn = $('#prevMonth');
@@ -145,6 +148,8 @@ async function toggleWorkout(dateStr, el){
   try{
     await putJson(jsonPath(userKey(currentUser)), userData);
     showToast('Salvo com sucesso');
+    // update dashboard after successful save
+    renderDashboard().catch(()=>{});
   }catch(e){
     if(cur) userData.workouts[dateStr]=true; else delete userData.workouts[dateStr];
     el.classList.toggle('active', cur);
@@ -179,6 +184,7 @@ async function createNewUser(){
   await loadUser(name);
   renderCalendar();
   loadNotes();
+  renderDashboard().catch(()=>{});
 }
 
 let savingNotes = false;
@@ -205,10 +211,55 @@ function showTab(tab){
   if(tab==='calendar'){
     tabCalendar.classList.add('active'); tabNotes.classList.remove('active');
     calendarView.classList.remove('hidden'); notesView.classList.add('hidden');
+    dashboardView.classList.add('hidden');
   }else{
     tabCalendar.classList.remove('active'); tabNotes.classList.add('active');
     calendarView.classList.add('hidden'); notesView.classList.remove('hidden');
+    dashboardView.classList.add('hidden');
   }
+}
+
+function showDashboard(){
+  tabCalendar.classList.remove('active'); tabNotes.classList.remove('active'); tabDashboard.classList.add('active');
+  calendarView.classList.add('hidden'); notesView.classList.add('hidden'); dashboardView.classList.remove('hidden');
+}
+
+function daysInYear(year){
+  return ((year%4===0 && year%100!==0) || (year%400===0)) ? 366 : 365;
+}
+
+async function getUserWorkoutCountForYear(userName, year){
+  try{
+    const obj = await fetchJson(jsonPath(userKey(userName)));
+    const wk = obj.workouts || {};
+    const prefix = `${year}-`;
+    return Object.keys(wk).filter(d=>d.startsWith(prefix)).length;
+  }catch(e){
+    return 0;
+  }
+}
+
+async function renderDashboard(){
+  if(!dashboardGrid) return;
+  dashboardGrid.innerHTML = '';
+  const total = daysInYear(currentYear);
+  const promises = users.map(u=> getUserWorkoutCountForYear(u, currentYear).then(c=>({user:u,count:c})).catch(()=>({user:u,count:0})));
+  const results = await Promise.all(promises);
+  results.forEach(r=>{
+    const card = document.createElement('div'); card.className='card';
+    const meta = document.createElement('div'); meta.className='meta';
+    const name = document.createElement('div'); name.className='name'; name.textContent = r.user;
+    const count = document.createElement('div'); count.className='count'; count.textContent = `${r.count}/${total}`;
+    meta.appendChild(name); meta.appendChild(count);
+    const progressWrap = document.createElement('div'); progressWrap.className='progress';
+    const progressBar = document.createElement('div'); progressBar.className='progressBar';
+    const pct = Math.round((r.count/total)*100);
+    progressBar.style.width = `${pct}%`;
+    progressWrap.appendChild(progressBar);
+    card.appendChild(meta);
+    card.appendChild(progressWrap);
+    dashboardGrid.appendChild(card);
+  });
 }
 
 async function init(){
@@ -224,12 +275,14 @@ async function init(){
   nextMonthBtn.addEventListener('click', ()=>{ currentMonth++; if(currentMonth>11){ currentMonth=0; currentYear++ } renderCalendar(); });
   tabCalendar.addEventListener('click', ()=>showTab('calendar'));
   tabNotes.addEventListener('click', ()=>showTab('notes'));
+  if(tabDashboard) tabDashboard.addEventListener('click', async ()=>{ showDashboard(); await renderDashboard(); });
   saveNotesBtn.addEventListener('click', saveNotes);
 
   if(userSelect.value){
     await loadUser(userSelect.value);
     renderCalendar();
     await loadNotes();
+    renderDashboard().catch(()=>{});
   }
 }
 
