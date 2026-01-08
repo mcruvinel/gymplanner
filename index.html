@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Gym Planner</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Gym Planner</h1>
+    <div class="controls">
+      <label for="userSelect">Usuário</label>
+      <select id="userSelect" aria-label="Selecionar usuário"></select>
+      <button id="newUserBtn">Novo usuário</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="tabs">
+      <button id="tabCalendar" class="tab active">Calendário</button>
+      <button id="tabNotes" class="tab">Notes</button>
+    </nav>
+
+    <section id="content" class="content">
+      <section id="calendarView" class="panel">
+        <div class="monthHeader">
+          <button id="prevMonth" aria-label="Mês anterior">◀</button>
+          <h2 id="monthLabel">Mês</h2>
+          <button id="nextMonth" aria-label="Próximo mês">▶</button>
+        </div>
+        <div id="calendar" class="calendar" role="grid" aria-label="Calendário mensal"></div>
+      </section>
+
+      <section id="notesView" class="panel hidden">
+        <h2>Notes</h2>
+        <textarea id="notesArea" rows="12"></textarea>
+        <div class="notesActions">
+          <button id="saveNotesBtn">Salvar</button>
+          <span id="notesStatus" class="status"></span>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small>Just do it.</small>
+  </footer>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
